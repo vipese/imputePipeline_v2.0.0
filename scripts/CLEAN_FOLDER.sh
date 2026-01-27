@@ -1,5 +1,5 @@
 #!/bin/bash -l
-#SBATCH --job-name=CLEAN_IMPUTE
+#SBATCH --job-name=CLEAN_FOLDER
 #SBATCH --mem-per-cpu=8000
 #SBATCH --time=05:00:00
 #SBATCH --account=mignot

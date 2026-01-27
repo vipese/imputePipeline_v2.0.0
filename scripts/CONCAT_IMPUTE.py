@@ -101,3 +101,4 @@ if __name__ == '__main__':
     #impute_object.parse_dir()
     impute_object.concat_files()
 #file_='CHR6_Plates_77_to_109_PMRA_shapeit'#124
+ 

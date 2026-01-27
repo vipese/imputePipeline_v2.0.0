@@ -1,4 +1,5 @@
 #!/bin/bash 
+
 command1="rm *_diplotype_ordering *_info_by_sample *_summary *_warnings *info"
 command2="find . -name '*.[[:digit:]][[:digit:]][[:digit:]]' -exec rm -f {} \;"
 command3="find . -name '*.[[:digit:]][[:digit:]]' -exec rm -f {} \;"

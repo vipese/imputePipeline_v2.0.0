@@ -1,4 +1,12 @@
 #!/bin/bash 
+
+#SBATCH --job-name=PLINK_SPLIT_WRAPPER
+#SBATCH --output=PLINK_SPLIT_WRAPPER.out
+#SBATCH --error=PLINK_SPLIT_WRAPPERsqueue.err
+#SBATCH --mem-per-cpu=16000
+#SBATCH --account=mignot
+#SBATCH --time=1:00:00
+
 command="./bin/plink --bfile "$1" --chr \$SLURM_ARRAY_TASK_ID --make-bed --out "$1"_CHR\$SLURM_ARRAY_TASK_ID"
 touch PLINK_SPLIT.sh
 chmod 755 PLINK_SPLIT.sh

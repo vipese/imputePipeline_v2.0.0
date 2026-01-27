@@ -89,7 +89,7 @@ def imputeCall(filePre, ref, *args):
                 ('21', '48129895'),
                 ('22', '51304566')]
     if ref == "3":
-        imputeScript = 'IMPUTE_LOOP_SLURM.sh'
+        imputeScript = 'IMPUTE_LOOP_SLURM_FIXED.sh'
     else:
         imputeScript = 'IMPUTE_LOOP_SLURM_Phase1.sh'
 
