@@ -19,6 +19,9 @@ SETTINGS=$(pwd)/settings.json
 PREFIX=$(jq -r '.prefix' $SETTINGS)
 REF=$(jq -r '.ref' $SETTINGS)
 
+# Cleanup option: set to true to remove intermediate files at the end
+CLEANUP=true
+
 # Initialize folders
 FILESFOLDER=$(jq -r '.folder.FILESFOLDER' $SETTINGS)
 GWAS_BY_CHR_FOLDER=$(jq -r '.folder.GWAS_BY_CHR' $SETTINGS)
@@ -110,7 +113,7 @@ echo ""
 echo "=== Step 2: Splitting by Chromosome ==="
 
 # Check if chromosome-split files exist
-CHR_SPLIT_EXISTS=false
+CHR_SPLIT_EXISTS=true
 for chr in {1..22}; do
     if [ ! -f "${PREFIX}_CHR${chr}.bed" ] && [ ! -f "${GWAS_BY_CHR_FOLDER}${PREFIX}_CHR${chr}.bed" ]; then
         CHR_SPLIT_EXISTS=false
@@ -491,6 +494,67 @@ if [ ! -f "${BINFILES_FOLDER}${PREFIX}.bed" ]; then
 fi
 echo ""
 
+########## STEP 10: FINAL CLEANUP ##########
+if [ "$CLEANUP" = true ]; then
+    echo "=== Step 10: Final Cleanup ==="
+
+    # Remove SLURM imputation logs
+    if [ -d "$SLURM_IMPUTE_LOG" ]; then
+        echo "Removing SLURM imputation logs: $SLURM_IMPUTE_LOG"
+        rm -rf "$SLURM_IMPUTE_LOG"
+    fi
+
+    # Remove SHAPEIT logs
+    if [ -d "$SHAPEIT_IMPUTE_LOG" ]; then
+        echo "Removing SHAPEIT logs: $SHAPEIT_IMPUTE_LOG"
+        rm -rf "$SHAPEIT_IMPUTE_LOG"
+    fi
+
+    # Remove GWAS_BY_CHR folder (intermediate chromosome-split files)
+    if [ -d "$GWAS_BY_CHR_FOLDER" ]; then
+        echo "Removing GWAS_BY_CHR folder: $GWAS_BY_CHR_FOLDER"
+        rm -rf "$GWAS_BY_CHR_FOLDER"
+    fi
+
+    # Remove imputeFiles folder (intermediate imputation segments)
+    if [ -d "imputeFiles" ]; then
+        echo "Removing imputeFiles folder"
+        rm -rf imputeFiles
+    fi
+
+    # Remove all .out and .err files in the pipeline directory
+    echo "Removing .out and .err files in pipeline directory..."
+    find . -maxdepth 1 -name "*.out" -type f -delete 2>/dev/null
+    find . -maxdepth 1 -name "*.err" -type f -delete 2>/dev/null
+
+    # Remove any remaining slurm output files
+    rm -f slurm-*.out slurm-*.err 2>/dev/null
+
+    # Remove SLURM_IMPUTE_LOG folder if it was recreated
+    rm -rf SLURM_IMPUTE_LOG 2>/dev/null
+
+    # Remove any other log directories that might have been created
+    rm -rf shapeit_logs 2>/dev/null
+    rm -rf impute_logs 2>/dev/null
+
+    # Remove all shapeit-related files
+    echo "Removing shapeit log files..."
+    rm -f shapeit*.log shapeit*.out shapeit*.err 2>/dev/null
+    find . -maxdepth 1 -name "shapeit*" -type f -delete 2>/dev/null
+
+    # Clean up temporary files
+    rm -f Dup_vars_name_pos.txt 2>/dev/null
+    rm -f gwastempFilt.* 2>/dev/null
+    rm -f *.log 2>/dev/null
+
+    echo "Final cleanup completed."
+    echo ""
+else
+    echo "=== Step 10: Final Cleanup (SKIPPED) ==="
+    echo "CLEANUP is set to false. Intermediate files retained."
+    echo ""
+fi
+
 ########## DONE ##########
 echo "=========================================="
 echo "=== Pipeline Complete ==="
@@ -505,8 +569,6 @@ echo ""
 echo "Per-chromosome BGEN files:"
 ls -lh ${BINFILES_FOLDER}CHR*_${PREFIX}.bgen 2>/dev/null | head -5
 echo ""
-echo "Logs are in:"
-echo "  - SLURM logs: $SLURM_IMPUTE_LOG"
-echo "  - SHAPEIT logs: $SHAPEIT_IMPUTE_LOG"
+echo "All intermediate files and logs have been cleaned up."
 echo ""
 
