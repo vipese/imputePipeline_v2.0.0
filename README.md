@@ -22,30 +22,76 @@ The pipeline requires the following modules: <br>
 To operate the pipeline, all the arguments must be introduced through the `settings.json` file. Particularly, you must keep in mind:
 1. To write the __total path__, and _not_ the relative path.
 2. To write a slash (/) at the end of each path. 
-For more information regarding each of the elements in the `settings.json` file, please refer to the _info_ element within the file. 
 
-### Computation 
-To run the pipeline:
+#### Folder Settings
+
+| Setting | Description |
+|---------|-------------|
+| `FILESFOLDER` | Folder containing the pipeline (repository) |
+| `SOURCE_DATA` | Folder containing non-imputed PLINK files (used by `submit_batch_imputation.sh`) |
+| `GWAS_BY_CHR` | Folder for intermediate chromosome-split files |
+| `SLURM_IMPUTE_LOG` | Folder for SLURM output and error logs |
+| `SHAPEIT_IMPUTE_LOG` | Folder for SHAPEIT logs |
+| `BIN_FOLDER` | Folder for imputed output files |
+
+For more information regarding each of the elements in the `settings.json` file, please refer to the _info_ element within the file.
+
+#### Pipeline Options (in main.sh)
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CLEANUP` | `true` | Remove intermediate files after pipeline completion |
+| `CLEANUP_CHR_FILES` | `false` | Remove per-chromosome files from output folder after merge |
+
+## Usage
+
+### Single File Imputation
+To run the pipeline for a single PLINK file:
 1. Clone the repository.
-2. Copy the _.bed_ files inside the directory.
-3. Fill up the `settings.json` file.
-4. Run from the repository's directory `sbatch main.sh`
+2. Copy the _.bed_, _.bim_, and _.fam_ files inside the directory.
+3. Fill up the `settings.json` file (set `prefix` to your file prefix).
+4. Run from the repository's directory: `sbatch main.sh`
+
+### Batch Imputation
+To impute multiple PLINK files automatically, use the batch submission script:
+
+```bash
+# Preview what would be submitted (no actual jobs)
+./submit_batch_imputation.sh --dry-run
+
+# Submit all unimputed files
+./submit_batch_imputation.sh
+
+# Test with first 3 files only
+./submit_batch_imputation.sh --test
+
+# Combine flags
+./submit_batch_imputation.sh --dry-run --test
+```
+
+The batch script:
+1. Reads `SOURCE_DATA` from `settings.json` to find non-imputed PLINK files
+2. Checks which files have already been imputed (exist in `BIN_FOLDER`)
+3. Submits a separate SLURM job for each unimputed file
+4. Each job runs in an isolated working directory to prevent conflicts
+5. Results are copied to `BIN_FOLDER` upon completion
+
+Logs are saved to `BATCH_IMPUTE_LOGS/` with timestamps to prevent overwrites.
 
 ## Issues 
 There are certain issues that must be taken into consideration prior to utilizing the pipeline:
 1. Low memory: the pipeline can be computationally heavy, and may not perform correctly with large datasets. Allow always ~50 GB of free space.
 2. The pipeline will fail if the files to be imputed contain duplicated variants (by position) or IDs.
-3. The pipeline only accepts one file at a time. That is, it will not deal with multiple _.bed_ files or databases.
-4. As of yet, the pipeline does not convert to _.bed_ files. This is because it converts to _.bgen_ and to allows merging it with other databases.
-5. Pipeline may not be function if the file to impute has multi-allelic variants.
-6. There is an issue when merging by chromosomes using QCTOOLS. When it converts to _.fam_ it messes up the IIDs.
+3. As of yet, the pipeline does not convert to _.bed_ files. This is because it converts to _.bgen_ and to allows merging it with other databases.
+4. Pipeline may not function if the file to impute has multi-allelic variants.
+5. There is an issue when merging by chromosomes using QCTOOLS. When it converts to _.fam_ it messes up the IIDs.
 
-## Future changes /
+## Future changes
 The following changes are recommended to improve the pipeline:
 1. Add headers to files.
 2. Improve `main.sh`
 3. Cleaning may be put into a single bash file in order to tidy up `main.sh`
-4. Include QC (remove duplciated variants and IIDs).
+4. Include QC (remove duplicated variants and IIDs).
 5. Finalize *utils*, to merge by CHR and between datasets. Maybe include it in main and add `settings.json` option.
 6. Add more verbose.
 
