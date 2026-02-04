@@ -2,6 +2,7 @@
 
     "folder":{
         "FILESFOLDER":"/labs/mignot/researchers/vipese/NMDA_GWAS_imputation/imputePipeline_v2.0.0/",
+        "SOURCE_DATA":"/labs/mignot/researchers/vipese/NMDA_GWAS_imputation/imputePipeline_v2.0.0/",
         "GWAS_BY_CHR":"/labs/mignot/researchers/vipese/NMDA_GWAS_imputation/imputePipeline_v2.0.0/GWAS_BY_CHR/",
         "SLURM_IMPUTE_LOG":"/labs/mignot/researchers/vipese/NMDA_GWAS_imputation/imputePipeline_v2.0.0/SLURM_IMPUTE_LOG/",
         "SHAPEIT_IMPUTE_LOG":"/labs/mignot/researchers/vipese/NMDA_GWAS_imputation/imputePipeline_v2.0.0/SHAPEIT_IMPUTE_LOG/",
@@ -10,11 +11,12 @@
     },
 
     "info":{
-        "FILESFOLDER":"Folder containing the pipeline (repository) and the data to impute",
+        "FILESFOLDER":"Folder containing the pipeline (repository)",
+        "SOURCE_DATA":"Folder containing non-imputed PLINK files (used by submit_batch_imputation.sh)",
         "GWAS_BY_CHR":" Folder containing the imputed GWAS separated by CHR",
         "SLURM_IMPUTE_LOG":" Folder containing slurm outputs and errors",
         "SHAPEIT_IMPUTE_LOG":" Folder containing SHAPEIT logs",
-        "BIN_FOLDER":" Folder containing binary imputed files",
+        "BIN_FOLDER":" Folder containing binary imputed files (imputation output)",
         "DATABASES":"Folders to: LGI1_Lyon, Oxford_LGI1, Stanford_I_LGI1, Stanford_II_LGI1"
     },
 
