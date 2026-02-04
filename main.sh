@@ -22,6 +22,10 @@ REF=$(jq -r '.ref' $SETTINGS)
 # Cleanup option: set to true to remove intermediate files at the end
 CLEANUP=true
 
+# Optional: set to true to remove per-chromosome files from destination folder after merge
+# This removes CHR*_${PREFIX}.* files (BGEN, BED, etc.) leaving only the merged output
+CLEANUP_CHR_FILES=false
+
 # Initialize folders
 FILESFOLDER=$(jq -r '.folder.FILESFOLDER' $SETTINGS)
 GWAS_BY_CHR_FOLDER=$(jq -r '.folder.GWAS_BY_CHR' $SETTINGS)
@@ -555,6 +559,23 @@ else
     echo ""
 fi
 
+# Optional: Remove per-chromosome files from destination folder
+if [ "$CLEANUP_CHR_FILES" = true ]; then
+    echo "=== Removing per-chromosome files from destination folder ==="
+    
+    # Count files before removal
+    CHR_FILE_COUNT=$(ls ${BINFILES_FOLDER}CHR*_${PREFIX}.* 2>/dev/null | wc -l)
+    
+    if [ "$CHR_FILE_COUNT" -gt 0 ]; then
+        echo "Removing $CHR_FILE_COUNT per-chromosome files..."
+        rm -f ${BINFILES_FOLDER}CHR*_${PREFIX}.* 2>/dev/null
+        echo "Per-chromosome files removed from: $BINFILES_FOLDER"
+    else
+        echo "No per-chromosome files found to remove."
+    fi
+    echo ""
+fi
+
 ########## DONE ##########
 echo "=========================================="
 echo "=== Pipeline Complete ==="
@@ -566,8 +587,13 @@ echo ""
 echo "Merged files:"
 ls -lh ${BINFILES_FOLDER}${PREFIX}.bed ${BINFILES_FOLDER}${PREFIX}.bim ${BINFILES_FOLDER}${PREFIX}.fam 2>/dev/null || echo "WARNING: Merged files not found"
 echo ""
-echo "Per-chromosome BGEN files:"
-ls -lh ${BINFILES_FOLDER}CHR*_${PREFIX}.bgen 2>/dev/null | head -5
+
+if [ "$CLEANUP_CHR_FILES" = true ]; then
+    echo "Per-chromosome files: REMOVED (CLEANUP_CHR_FILES=true)"
+else
+    echo "Per-chromosome BGEN files:"
+    ls -lh ${BINFILES_FOLDER}CHR*_${PREFIX}.bgen 2>/dev/null | head -5
+fi
 echo ""
 echo "All intermediate files and logs have been cleaned up."
 echo ""
