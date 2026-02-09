@@ -189,16 +189,22 @@ for prefix in "${FILES_TO_IMPUTE[@]}"; do
         
         # Create job-specific settings.json with the correct prefix and paths
         # Use the job workdir as FILESFOLDER since data will be copied there
+        # IMPORTANT: BIN_FOLDER must also be job-specific to prevent jobs from
+        # interfering with each other (e.g., QC'ing files from other jobs)
+        JOB_BIN_FOLDER="${JOB_WORKDIR}/BIN_OUTPUT/"
+        
         jq --arg prefix "$prefix" \
            --arg filesfolder "${JOB_WORKDIR}/" \
            --arg gwas_by_chr "${JOB_WORKDIR}/GWAS_BY_CHR/" \
            --arg slurm_log "${JOB_WORKDIR}/SLURM_IMPUTE_LOG/" \
            --arg shapeit_log "${JOB_WORKDIR}/SHAPEIT_IMPUTE_LOG/" \
+           --arg bin_folder "${JOB_BIN_FOLDER}" \
            '.prefix = $prefix | 
             .folder.FILESFOLDER = $filesfolder |
             .folder.GWAS_BY_CHR = $gwas_by_chr |
             .folder.SLURM_IMPUTE_LOG = $slurm_log |
-            .folder.SHAPEIT_IMPUTE_LOG = $shapeit_log' \
+            .folder.SHAPEIT_IMPUTE_LOG = $shapeit_log |
+            .folder.BIN_FOLDER = $bin_folder' \
            "$SETTINGS" > "${JOB_WORKDIR}/settings.json"
         
         # Copy source PLINK files to the job working directory
